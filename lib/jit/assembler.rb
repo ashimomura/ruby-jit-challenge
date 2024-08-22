@@ -50,6 +50,7 @@ module JIT
     end
 
     def assemble(addr)
+      set_start_addr(addr)
       resolve_rel32(addr)
       resolve_labels
 
@@ -62,6 +63,19 @@ module JIT
 
     def size
       @bytes.size
+    end
+
+    def branch(branch)
+      @branches[@bytes.size] << branch
+      yield
+    end
+
+    def set_start_addr(write_addr)
+      (@bytes.size + 1).times do |index|
+        @branches.fetch(index, []).each do |branch|
+          branch.start_addr = write_addr + index
+        end
+      end
     end
 
     #
